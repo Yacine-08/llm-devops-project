@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: open-webui-network-policy
+  namespace: llm-devops
+spec:
+  podSelector:
+    matchLabels:
+      app: open-webui
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Ingress controller (nginx) -> Open WebUI
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Prometheus -> open-webui-exporter (sidecar)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+  egress:
+    # Open WebUI -> Ollama (API d'inference)
+    - to:
+        - podSelector:
+            matchLabels:
+              app: ollama
+      ports:
+        - protocol: TCP
+          port: 11434

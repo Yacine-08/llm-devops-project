@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-llm
+  namespace: monitoring
+data:
+  llm-devops.json: |
+    {
+      "title": "LLM DevOps - Ollama & Open WebUI",
+      "uid": "llm-devops-overview",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "refresh": "30s",
+      "time": { "from": "now-1h", "to": "now" },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Targets Up (1 = healthy)",
+          "type": "stat",
+          "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
+          "targets": [
+            {
+              "expr": "up{job=\"llm-devops-apps\"}",
+              "legendFormat": "{{app}} ({{pod}})"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+              ],
+              "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+            }
+          }
+        },
+        {
+          "id": 2,
+          "title": "CPU Usage by Pod (llm-devops namespace)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+          "targets": [
+            {
+              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"llm-devops\"}[5m])) by (pod)",
+              "legendFormat": "{{pod}}"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "short" } }
+        },
+        {
+          "id": 3,
+          "title": "Memory Usage by Pod (llm-devops namespace)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+          "targets": [
+            {
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"llm-devops\"}) by (pod)",
+              "legendFormat": "{{pod}}"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "bytes" } }
+        },
+        {
+          "id": 4,
+          "title": "Exporter Scrape Duration",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+          "targets": [
+            {
+              "expr": "scrape_duration_seconds{job=\"llm-devops-apps\"}",
+              "legendFormat": "{{app}} ({{pod}})"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "s" } }
+        },
+        {
+          "id": 5,
+          "title": "Ollama - Models Loaded",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 14 },
+          "targets": [
+            { "expr": "ollama_models_total", "legendFormat": "models" }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "Ollama - Model Size by Model",
+          "type": "bargauge",
+          "gridPos": { "h": 8, "w": 6, "x": 18, "y": 14 },
+          "targets": [
+            { "expr": "ollama_model_size_bytes", "legendFormat": "{{model_name}}" }
+          ],
+          "fieldConfig": { "defaults": { "unit": "bytes" } }
+        },
+        {
+          "id": 7,
+          "title": "Ollama - Model Last Modified",
+          "type": "table",
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 18 },
+          "targets": [
+            { "expr": "ollama_model_modified_timestamp_seconds", "legendFormat": "{{model}}", "format": "table", "instant": true }
+          ]
+        }
+      ]
+    }

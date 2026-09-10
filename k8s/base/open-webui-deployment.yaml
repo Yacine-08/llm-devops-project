@@ -12,6 +12,10 @@ spec:
     metadata:
       labels:
         app: open-webui
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
         - name: open-webui
@@ -54,6 +58,40 @@ spec:
           volumeMounts:
             - name: open-webui-data
               mountPath: /app/backend/data
+
+        - name: open-webui-exporter
+          image: ghcr.io/baselhusam/open-webui-exporter:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9090
+              protocol: TCP
+          env:
+            - name: OPENWEBUI_BASE_URL
+              value: "http://localhost:8080"
+            - name: EXPORTER_PORT
+              value: "9090"
+            - name: POLL_INTERVAL_SECONDS
+              value: "30"
+            - name: OPENWEBUI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: open-webui-exporter-secret
+                  key: api-key
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "150m"
+              memory: "128Mi"
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 9090
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+
       volumes:
         - name: open-webui-data
           persistentVolumeClaim:

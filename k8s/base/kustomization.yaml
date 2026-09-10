@@ -8,8 +8,15 @@ resources:
   - ollama-deployment.yaml
   - ollama-service.yaml
   - ollama-pdb.yaml
+  - ollama-hpa.yaml
   - open-webui-pvc.yaml
   - open-webui-deployment.yaml
+  - open-webui-exporter-secret.yaml
   - open-webui-service.yaml
   - open-webui-pdb.yaml
+  - open-webui-hpa.yaml
   - ingress.yaml
+  - networkpolicy-default-deny.yaml
+  - networkpolicy-dns.yaml
+  - networkpolicy-ollama.yaml
+  - networkpolicy-open-webui.yaml

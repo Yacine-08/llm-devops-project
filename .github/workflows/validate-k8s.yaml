@@ -44,6 +44,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Debug kubeconfig
+        run: |
+          echo "whoami: $(whoami)"
+          echo "HOME: $HOME"
+          echo "KUBECONFIG: $KUBECONFIG"
+          kubectl config current-context || true
+          kubectl config view --minify
+          kubectl cluster-info || true
+
       - name: Deploy to Minikube (dev overlay)
         run: kubectl apply -k k8s/overlays/dev
 
